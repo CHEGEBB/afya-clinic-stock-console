@@ -120,4 +120,4 @@ Pipeline: TBD, what it runs and which checks can block a merge.
 
 ## Section 4 — AI reflection
 
-TBD, answered honestly, per section, once the build is complete.
+TBD, answered honestly, per section, once the build is complete
