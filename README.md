@@ -20,6 +20,7 @@ https://github.com/CHEGEBB/afya-clinic-stock-console
 - Data source: DummyJSON
 
 ## Getting Started (Run Locally)
+```
 
 Clone the repo, install dependencies, and run the dev server:
 
@@ -37,6 +38,7 @@ npm run format — runs Prettier and writes changes
 npm run format:check — runs Prettier in check mode, fails on unformatted files
 
 ---
+```
 
 ## Section 1 — Design
 
