@@ -1,11 +1,15 @@
-// src/app/stock/page.tsx
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import Link from "next/link";
-import { Search, AlertCircle, PackageX, WifiOff } from "lucide-react";
 import { AuthGuard } from "@/components/auth-guard";
+import { SearchFilterBar } from "@/components/stock/search-filter-bar";
+import { StockItemCard } from "@/components/stock/stock-item-card";
+import { Pagination } from "@/components/stock/pagination";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
+import { OfflineBanner } from "@/components/ui/offline-banner";
 import { getProducts, getCategories, type Product, type ProductCategory } from "@/services/products";
 import { ApiError } from "@/services/api-client";
 
@@ -45,7 +49,6 @@ function StockPageContent() {
   const [status, setStatus] = useState<"loading" | "success" | "empty" | "error">("loading");
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
 
-  // Re-sync state from the URL on browser back/forward navigation.
   useEffect(() => {
     function handlePopState() {
       setUrlState(readUrlState());
@@ -67,7 +70,6 @@ function StockPageContent() {
     setUrlState(merged);
   }
 
-  // Debounce search input -> URL.
   useEffect(() => {
     const handle = setTimeout(() => {
       if (searchInput !== urlState.search) {
@@ -78,20 +80,17 @@ function StockPageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-run on searchInput changes; including updateUrl/urlState would retrigger this on every URL change, defeating the debounce.
   }, [searchInput]);
 
-  // Fetch categories once.
   useEffect(() => {
     getCategories()
       .then(setCategories)
       .catch(() => setCategories([]));
   }, []);
 
-  // Fetch products whenever URL state changes. AbortController guards
-  // against a slow, stale response overwriting a newer one.
- useEffect(() => {
-  const controller = new AbortController();
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting to a loading state at the start of a data-fetch effect is the standard pattern; the alternative (deriving loading from a separate promise-tracking state) adds complexity without changing behavior here.
-  setStatus("loading");
-  setErrorStatus(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting to a loading state at the start of a data-fetch effect is the standard pattern; the alternative (deriving loading from a separate promise-tracking state) adds complexity without changing behavior here.
+    setStatus("loading");
+    setErrorStatus(null);
 
     getProducts({
       limit: LIMIT,
@@ -127,132 +126,35 @@ function StockPageContent() {
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-8">
       <h1 className="text-2xl font-semibold text-text-primary">Stock List</h1>
 
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary" />
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search stock..."
-            aria-label="Search stock"
-            className="w-full rounded-lg border border-border bg-surface py-2.5 pl-9 pr-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-500"
-          />
-        </div>
+      <SearchFilterBar
+        searchInput={searchInput}
+        onSearchChange={setSearchInput}
+        category={urlState.category}
+        onCategoryChange={(category) => updateUrl({ category, page: 1 })}
+        sortBy={urlState.sortBy}
+        order={urlState.order}
+        onSortChange={(sortBy, order) => updateUrl({ sortBy, order, page: 1 })}
+        categories={categories}
+      />
 
-        <select
-          value={urlState.category}
-          onChange={(e) => updateUrl({ category: e.target.value, page: 1 })}
-          aria-label="Filter by category"
-          className="rounded-lg border border-border bg-surface px-3 py-2.5 text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-500"
-        >
-          <option value="">All categories</option>
-          {categories.map((c) => (
-            <option key={c.slug} value={c.slug}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+      {isOffline && <OfflineBanner />}
 
-        <select
-          value={`${urlState.sortBy}-${urlState.order}`}
-          onChange={(e) => {
-            const [sortBy, order] = e.target.value.split("-") as [string, "asc" | "desc"];
-            updateUrl({ sortBy, order, page: 1 });
-          }}
-          aria-label="Sort order"
-          className="rounded-lg border border-border bg-surface px-3 py-2.5 text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-500"
-        >
-          <option value="title-asc">Name (A-Z)</option>
-          <option value="title-desc">Name (Z-A)</option>
-          <option value="stock-asc">Stock (low-high)</option>
-          <option value="stock-desc">Stock (high-low)</option>
-          <option value="price-asc">Price (low-high)</option>
-          <option value="price-desc">Price (high-low)</option>
-        </select>
-      </div>
-
-      {isOffline && (
-        <div className="mt-4 flex items-center gap-2 rounded-lg border border-warning-500/30 bg-warning-50 px-3 py-2.5 text-sm text-warning-700">
-          <WifiOff className="h-4 w-4 shrink-0" />
-          <span>You&apos;re offline. Showing the last loaded results.</span>
-        </div>
-      )}
-
-      {status === "loading" && (
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="animate-pulse rounded-lg border border-border bg-surface p-4">
-              <div className="h-32 w-full rounded bg-border" />
-              <div className="mt-3 h-4 w-3/4 rounded bg-border" />
-              <div className="mt-2 h-3 w-1/2 rounded bg-border" />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {status === "empty" && (
-        <div className="mt-10 flex flex-col items-center justify-center gap-2 py-12 text-center">
-          <PackageX className="h-10 w-10 text-text-secondary" />
-          <p className="font-medium text-text-primary">No items found</p>
-          <p className="text-sm text-text-secondary">Try a different search or category.</p>
-        </div>
-      )}
-
-      {status === "error" && (
-        <div className="mt-10 flex flex-col items-center justify-center gap-3 py-12 text-center">
-          <AlertCircle className="h-10 w-10 text-error-500" />
-          <p className="font-medium text-text-primary">
-            {errorStatus === 500
-              ? "Something went wrong on the server."
-              : "Couldn't load stock. Check your connection."}
-          </p>
-          <button
-            onClick={handleRetry}
-            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
-          >
-            Retry
-          </button>
-        </div>
-      )}
+      {status === "loading" && <LoadingSkeleton />}
+      {status === "empty" && <EmptyState />}
+      {status === "error" && <ErrorState status={errorStatus} onRetry={handleRetry} />}
 
       {status === "success" && (
         <>
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => (
-              <Link
-                key={product.id}
-                href={`/items/${product.id}`}
-                className="rounded-lg border border-border bg-surface p-4 transition hover:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              >
-                <p className="font-medium text-text-primary">{product.title}</p>
-                <p className="mt-1 text-sm capitalize text-text-secondary">
-                  {product.category.replace("-", " ")}
-                </p>
-                <p className="mt-2 text-sm text-brand-700">Stock: {product.stock}</p>
-              </Link>
+              <StockItemCard key={product.id} product={product} />
             ))}
           </div>
-
-          <div className="mt-6 flex items-center justify-between">
-            <button
-              onClick={() => updateUrl({ page: urlState.page - 1 })}
-              disabled={urlState.page <= 1}
-              className="rounded-lg border border-border px-3 py-2 text-sm text-text-primary disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <span className="text-sm text-text-secondary">
-              Page {urlState.page} of {totalPages}
-            </span>
-            <button
-              onClick={() => updateUrl({ page: urlState.page + 1 })}
-              disabled={urlState.page >= totalPages}
-              className="rounded-lg border border-border px-3 py-2 text-sm text-text-primary disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
+          <Pagination
+            page={urlState.page}
+            totalPages={totalPages}
+            onPageChange={(page) => updateUrl({ page })}
+          />
         </>
       )}
     </div>
