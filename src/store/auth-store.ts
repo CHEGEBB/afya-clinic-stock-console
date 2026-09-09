@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface AuthUser {
   id: number;
@@ -15,11 +15,7 @@ interface AuthState {
   refreshToken: string | null;
   user: AuthUser | null;
   isAuthenticated: boolean;
-  setSession: (params: {
-    accessToken: string;
-    refreshToken: string;
-    user: AuthUser;
-  }) => void;
+  setSession: (params: { accessToken: string; refreshToken: string; user: AuthUser }) => void;
   setAccessToken: (accessToken: string) => void;
   clearSession: () => void;
 }
@@ -51,7 +47,7 @@ export const useAuthStore = create<AuthState>()(
         }),
     }),
     {
-      name: "afya-auth-storage",
+      name: 'afya-auth-storage',
     }
   )
 );

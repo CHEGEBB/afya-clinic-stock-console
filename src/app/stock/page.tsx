@@ -1,24 +1,29 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { AuthGuard } from "@/components/auth-guard";
-import { SearchFilterBar } from "@/components/stock/search-filter-bar";
-import { StockItemCard } from "@/components/stock/stock-item-card";
-import { Pagination } from "@/components/stock/pagination";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { EmptyState } from "@/components/ui/empty-state";
-import { ErrorState } from "@/components/ui/error-state";
-import { OfflineBanner } from "@/components/ui/offline-banner";
-import { getProducts, getCategories, type Product, type ProductCategory } from "@/services/products";
-import { ApiError } from "@/services/api-client";
-import { parseStockUrlState, type StockUrlState } from "@/lib/url-state";
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { AuthGuard } from '@/components/auth-guard';
+import { SearchFilterBar } from '@/components/stock/search-filter-bar';
+import { StockItemCard } from '@/components/stock/stock-item-card';
+import { Pagination } from '@/components/stock/pagination';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
+import { ErrorState } from '@/components/ui/error-state';
+import { OfflineBanner } from '@/components/ui/offline-banner';
+import {
+  getProducts,
+  getCategories,
+  type Product,
+  type ProductCategory,
+} from '@/services/products';
+import { ApiError } from '@/services/api-client';
+import { parseStockUrlState, type StockUrlState } from '@/lib/url-state';
 
 const LIMIT = 12;
 
 function readUrlState(): StockUrlState {
-  if (typeof window === "undefined") {
-    return { search: "", category: "", sortBy: "title", order: "asc", page: 1 };
+  if (typeof window === 'undefined') {
+    return { search: '', category: '', sortBy: 'title', order: 'asc', page: 1 };
   }
   return parseStockUrlState(window.location.search);
 }
@@ -32,25 +37,25 @@ function StockPageContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
-  const [status, setStatus] = useState<"loading" | "success" | "empty" | "error">("loading");
+  const [status, setStatus] = useState<'loading' | 'success' | 'empty' | 'error'>('loading');
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
 
   useEffect(() => {
     function handlePopState() {
       setUrlState(readUrlState());
     }
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   function updateUrl(next: Partial<StockUrlState>) {
     const merged: StockUrlState = { ...urlState, ...next };
     const params = new URLSearchParams();
-    if (merged.search) params.set("q", merged.search);
-    if (merged.category) params.set("category", merged.category);
-    params.set("sortBy", merged.sortBy);
-    params.set("order", merged.order);
-    params.set("page", String(merged.page));
+    if (merged.search) params.set('q', merged.search);
+    if (merged.category) params.set('category', merged.category);
+    params.set('sortBy', merged.sortBy);
+    params.set('order', merged.order);
+    params.set('page', String(merged.page));
 
     router.push(`${pathname}?${params.toString()}`);
     setUrlState(merged);
@@ -75,7 +80,7 @@ function StockPageContent() {
   useEffect(() => {
     const controller = new AbortController();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting to a loading state at the start of a data-fetch effect is the standard pattern; the alternative (deriving loading from a separate promise-tracking state) adds complexity without changing behavior here.
-    setStatus("loading");
+    setStatus('loading');
     setErrorStatus(null);
 
     getProducts({
@@ -90,11 +95,11 @@ function StockPageContent() {
         if (controller.signal.aborted) return;
         setProducts(data.products);
         setTotal(data.total);
-        setStatus(data.products.length === 0 ? "empty" : "success");
+        setStatus(data.products.length === 0 ? 'empty' : 'success');
       })
       .catch((err) => {
         if (controller.signal.aborted) return;
-        setStatus("error");
+        setStatus('error');
         setErrorStatus(err instanceof ApiError ? err.status : null);
       });
 
@@ -102,7 +107,7 @@ function StockPageContent() {
   }, [urlState.search, urlState.category, urlState.sortBy, urlState.order, urlState.page]);
 
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
-  const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
+  const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
 
   const handleRetry = useCallback(() => {
     setUrlState((s) => ({ ...s }));
@@ -125,11 +130,11 @@ function StockPageContent() {
 
       {isOffline && <OfflineBanner />}
 
-      {status === "loading" && <LoadingSkeleton />}
-      {status === "empty" && <EmptyState />}
-      {status === "error" && <ErrorState status={errorStatus} onRetry={handleRetry} />}
+      {status === 'loading' && <LoadingSkeleton />}
+      {status === 'empty' && <EmptyState />}
+      {status === 'error' && <ErrorState status={errorStatus} onRetry={handleRetry} />}
 
-      {status === "success" && (
+      {status === 'success' && (
         <>
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => (

@@ -10,7 +10,8 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: 'Afya Clinic Stock Console',
-  description: 'Internal stock console for clinic supplies teams- search, filter, and correct stock counts.',
+  description:
+    'Internal stock console for clinic supplies teams- search, filter, and correct stock counts.',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

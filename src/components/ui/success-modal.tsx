@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { useEffect } from 'react';
+import { CheckCircle2 } from 'lucide-react';
 
 interface SuccessModalProps {
   message: string;
@@ -16,10 +16,10 @@ export function SuccessModal({ message, onClose }: SuccessModalProps) {
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === 'Escape') onClose();
     }
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
   return (

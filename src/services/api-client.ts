@@ -1,6 +1,6 @@
-import { useAuthStore } from "@/store/auth-store";
+import { useAuthStore } from '@/store/auth-store';
 
-const BASE_URL = "https://dummyjson.com";
+const BASE_URL = 'https://dummyjson.com';
 
 interface RequestOptions extends RequestInit {
   skipAuth?: boolean;
@@ -22,11 +22,9 @@ async function rawRequest(path: string, options: RequestOptions = {}) {
   const { skipAuth, headers, ...rest } = options;
 
   const finalHeaders: HeadersInit = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     ...headers,
-    ...(skipAuth || !accessToken
-      ? {}
-      : { Authorization: `Bearer ${accessToken}` }),
+    ...(skipAuth || !accessToken ? {} : { Authorization: `Bearer ${accessToken}` }),
   };
 
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -38,23 +36,22 @@ async function rawRequest(path: string, options: RequestOptions = {}) {
 }
 
 async function refreshAccessToken(): Promise<string> {
-  const { refreshToken, setAccessToken, clearSession } =
-    useAuthStore.getState();
+  const { refreshToken, setAccessToken, clearSession } = useAuthStore.getState();
 
   if (!refreshToken) {
     clearSession();
-    throw new ApiError("No refresh token available", 401, null);
+    throw new ApiError('No refresh token available', 401, null);
   }
 
   const res = await fetch(`${BASE_URL}/auth/refresh`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refreshToken, expiresInMins: 30 }),
   });
 
   if (!res.ok) {
     clearSession();
-    throw new ApiError("Session expired, please log in again", 401, null);
+    throw new ApiError('Session expired, please log in again', 401, null);
   }
 
   const data = await res.json();
@@ -62,10 +59,7 @@ async function refreshAccessToken(): Promise<string> {
   return data.accessToken;
 }
 
-export async function apiRequest<T>(
-  path: string,
-  options: RequestOptions = {}
-): Promise<T> {
+export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   let res = await rawRequest(path, options);
 
   // when the access token is expired, try to refresh it and retry the request
@@ -81,11 +75,7 @@ export async function apiRequest<T>(
     } catch {
       // ignore JSON parsing errors
     }
-    throw new ApiError(
-      `Request failed with status ${res.status}`,
-      res.status,
-      body
-    );
+    throw new ApiError(`Request failed with status ${res.status}`, res.status, body);
   }
 
   return res.json() as Promise<T>;

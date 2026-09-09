@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { updateStock } from "@/services/products";
-import { ApiError } from "@/services/api-client";
-import { stockSchema } from "@/lib/validation";
+import { useState } from 'react';
+import { updateStock } from '@/services/products';
+import { ApiError } from '@/services/api-client';
+import { stockSchema } from '@/lib/validation';
 
 interface StockCorrectionFormProps {
   productId: number;
@@ -42,7 +42,7 @@ export function StockCorrectionForm({
       setSubmitError(
         err instanceof ApiError
           ? `Save failed (${err.status}). Please try again.`
-          : "Save failed. Check your connection and try again."
+          : 'Save failed. Check your connection and try again.'
       );
     } finally {
       setIsSaving(false);
@@ -83,7 +83,7 @@ export function StockCorrectionForm({
           disabled={isSaving}
           className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSaving ? "Saving..." : "Save"}
+          {isSaving ? 'Saving...' : 'Save'}
         </button>
         <button
           type="button"

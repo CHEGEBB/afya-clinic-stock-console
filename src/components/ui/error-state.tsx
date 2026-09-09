@@ -1,4 +1,4 @@
-import { AlertCircle } from "lucide-react";
+import { AlertCircle } from 'lucide-react';
 
 interface ErrorStateProps {
   status: number | null;
@@ -11,7 +11,7 @@ export function ErrorState({ status, onRetry }: ErrorStateProps) {
       <AlertCircle className="h-10 w-10 text-error-500" />
       <p className="font-medium text-text-primary">
         {status === 500
-          ? "Something went wrong on the server."
+          ? 'Something went wrong on the server.'
           : "Couldn't load stock. Check your connection."}
       </p>
       <button

@@ -1,5 +1,5 @@
-import Link from "next/link";
-import type { Product } from "@/services/products";
+import Link from 'next/link';
+import type { Product } from '@/services/products';
 
 export function StockItemCard({ product }: { product: Product }) {
   return (
@@ -9,7 +9,7 @@ export function StockItemCard({ product }: { product: Product }) {
     >
       <p className="font-medium text-text-primary">{product.title}</p>
       <p className="mt-1 text-sm capitalize text-text-secondary">
-        {product.category.replace("-", " ")}
+        {product.category.replace('-', ' ')}
       </p>
       <p className="mt-2 text-sm text-brand-700">Stock: {product.stock}</p>
     </Link>

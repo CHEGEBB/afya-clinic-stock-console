@@ -1,4 +1,4 @@
-import { WifiOff } from "lucide-react";
+import { WifiOff } from 'lucide-react';
 
 export function OfflineBanner() {
   return (

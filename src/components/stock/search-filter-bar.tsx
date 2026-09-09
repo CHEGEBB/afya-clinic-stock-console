@@ -1,5 +1,5 @@
-import { Search } from "lucide-react";
-import type { ProductCategory } from "@/services/products";
+import { Search } from 'lucide-react';
+import type { ProductCategory } from '@/services/products';
 
 interface SearchFilterBarProps {
   searchInput: string;
@@ -7,8 +7,8 @@ interface SearchFilterBarProps {
   category: string;
   onCategoryChange: (slug: string) => void;
   sortBy: string;
-  order: "asc" | "desc";
-  onSortChange: (sortBy: string, order: "asc" | "desc") => void;
+  order: 'asc' | 'desc';
+  onSortChange: (sortBy: string, order: 'asc' | 'desc') => void;
   categories: ProductCategory[];
 }
 
@@ -53,7 +53,7 @@ export function SearchFilterBar({
       <select
         value={`${sortBy}-${order}`}
         onChange={(e) => {
-          const [nextSortBy, nextOrder] = e.target.value.split("-") as [string, "asc" | "desc"];
+          const [nextSortBy, nextOrder] = e.target.value.split('-') as [string, 'asc' | 'desc'];
           onSortChange(nextSortBy, nextOrder);
         }}
         aria-label="Sort order"

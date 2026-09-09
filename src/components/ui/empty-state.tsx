@@ -1,4 +1,4 @@
-import { PackageX } from "lucide-react";
+import { PackageX } from 'lucide-react';
 
 export function EmptyState() {
   return (

@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { useEffect, useState, use } from "react";
-import Link from "next/link";
-import { ArrowLeft, Pencil } from "lucide-react";
-import { AuthGuard } from "@/components/auth-guard";
-import { StockCorrectionForm } from "@/components/items/stock-correction-form";
-import { ItemDetailSkeleton } from "@/components/items/item-detail-skeleton";
-import { SuccessModal } from "@/components/ui/success-modal";
-import { ErrorState } from "@/components/ui/error-state";
-import { getProduct, type Product } from "@/services/products";
-import { ApiError } from "@/services/api-client";
+import { useEffect, useState, use } from 'react';
+import Link from 'next/link';
+import { ArrowLeft, Pencil } from 'lucide-react';
+import { AuthGuard } from '@/components/auth-guard';
+import { StockCorrectionForm } from '@/components/items/stock-correction-form';
+import { ItemDetailSkeleton } from '@/components/items/item-detail-skeleton';
+import { SuccessModal } from '@/components/ui/success-modal';
+import { ErrorState } from '@/components/ui/error-state';
+import { getProduct, type Product } from '@/services/products';
+import { ApiError } from '@/services/api-client';
 
 function ItemDetailContent({ id }: { id: string }) {
   const [product, setProduct] = useState<Product | null>(null);
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
   const [reloadToken, setReloadToken] = useState(0);
 
   function load() {
-    setStatus("loading");
+    setStatus('loading');
     setErrorStatus(null);
     setReloadToken((token) => token + 1);
   }
@@ -34,11 +34,11 @@ function ItemDetailContent({ id }: { id: string }) {
         if (cancelled) return;
 
         setProduct(data);
-        setStatus("success");
+        setStatus('success');
       } catch (err) {
         if (cancelled) return;
 
-        setStatus("error");
+        setStatus('error');
         setErrorStatus(err instanceof ApiError ? err.status : null);
       }
     }
@@ -66,26 +66,22 @@ function ItemDetailContent({ id }: { id: string }) {
         Back to stock list
       </Link>
 
-      {status === "loading" && <ItemDetailSkeleton />}
+      {status === 'loading' && <ItemDetailSkeleton />}
 
-      {status === "error" && <ErrorState status={errorStatus} onRetry={load} />}
+      {status === 'error' && <ErrorState status={errorStatus} onRetry={load} />}
 
-      {status === "success" && product && (
+      {status === 'success' && product && (
         <div className="mt-6 rounded-lg border border-border bg-surface p-6">
-          <h1 className="text-xl font-semibold text-text-primary">
-            {product.title}
-          </h1>
+          <h1 className="text-xl font-semibold text-text-primary">{product.title}</h1>
           <p className="mt-1 text-sm capitalize text-text-secondary">
-            {product.category.replace("-", " ")}
+            {product.category.replace('-', ' ')}
           </p>
           <p className="mt-4 text-text-secondary">{product.description}</p>
 
           <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
             <div>
               <p className="text-sm text-text-secondary">Current stock</p>
-              <p className="text-2xl font-semibold text-text-primary">
-                {product.stock}
-              </p>
+              <p className="text-2xl font-semibold text-text-primary">{product.stock}</p>
             </div>
             {!isEditing && (
               <button
@@ -110,20 +106,13 @@ function ItemDetailContent({ id }: { id: string }) {
       )}
 
       {showSaved && (
-        <SuccessModal
-          message="Stock count updated."
-          onClose={() => setShowSaved(false)}
-        />
+        <SuccessModal message="Stock count updated." onClose={() => setShowSaved(false)} />
       )}
     </div>
   );
 }
 
-export default function ItemDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function ItemDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
   return (
