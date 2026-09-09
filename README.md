@@ -93,8 +93,6 @@ Decision: Refresh the access token in the background silently and try the failed
 
 ### Required behaviour notes
 
-TBD
-
 ### Known limitations of the mock API
 
 TBD, for example PUT to /products/:id does not persist server side, and token expiry behaviour.
