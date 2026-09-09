@@ -93,7 +93,7 @@ Decision: Refresh the access token in the background silently and try the failed
 
 ### Required behaviour notes
 
-TBD
+
 
 ### Known limitations of the mock API
 
