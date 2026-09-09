@@ -1,14 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { z } from "zod";
 import { updateStock } from "@/services/products";
 import { ApiError } from "@/services/api-client";
-
-const stockSchema = z
-  .number({ message: "Stock count is required" })
-  .int({ message: "Stock count must be a whole number" })
-  .nonnegative({ message: "Stock count cannot be negative" });
+import { stockSchema } from "@/lib/validation";
 
 interface StockCorrectionFormProps {
   productId: number;
