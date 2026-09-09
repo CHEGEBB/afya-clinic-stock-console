@@ -1,12 +1,53 @@
-// src/app/login/page.tsx
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import { login } from "@/services/auth";
+import { useAuthStore } from "@/store/auth-store";
+import { ApiError } from "@/services/api-client";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const setSession = useAuthStore((s) => s.setSession);
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const data = await login(username, password);
+      setSession({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        user: {
+          id: data.id,
+          username: data.username,
+          email: data.email,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          image: data.image,
+        },
+      });
+      router.push("/stock");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) {
+        setError("Incorrect username or password.");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col md:flex-row">
@@ -29,7 +70,17 @@ export default function LoginPage() {
             Sign in to access the stock console.
           </p>
 
-          <form className="mt-10 space-y-6">
+          {error && (
+            <div
+              role="alert"
+              className="mt-6 flex items-start gap-2 rounded-lg border border-error-500/30 bg-error-50 px-3 py-2.5 text-sm text-error-700"
+            >
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
             <div>
               <label
                 htmlFor="username"
@@ -42,6 +93,9 @@ export default function LoginPage() {
                 name="username"
                 type="text"
                 autoComplete="username"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className="mt-2 w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="emilys"
               />
@@ -60,8 +114,11 @@ export default function LoginPage() {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 pr-10 text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  placeholder="********"
+                  placeholder="••••••••"
                 />
                 <button
                   type="button"
@@ -80,9 +137,10 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-brand-600 py-2.5 font-medium text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+              disabled={isSubmitting}
+              className="w-full rounded-lg bg-brand-600 py-2.5 font-medium text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Sign in
+              {isSubmitting ? "Signing in..." : "Sign in"}
             </button>
           </form>
         </div>
