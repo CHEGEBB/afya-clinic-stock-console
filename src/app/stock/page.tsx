@@ -12,36 +12,22 @@ import { ErrorState } from "@/components/ui/error-state";
 import { OfflineBanner } from "@/components/ui/offline-banner";
 import { getProducts, getCategories, type Product, type ProductCategory } from "@/services/products";
 import { ApiError } from "@/services/api-client";
+import { parseStockUrlState, type StockUrlState } from "@/lib/url-state";
 
 const LIMIT = 12;
 
-interface UrlState {
-  search: string;
-  category: string;
-  sortBy: string;
-  order: "asc" | "desc";
-  page: number;
-}
-
-function readUrlState(): UrlState {
+function readUrlState(): StockUrlState {
   if (typeof window === "undefined") {
     return { search: "", category: "", sortBy: "title", order: "asc", page: 1 };
   }
-  const params = new URLSearchParams(window.location.search);
-  return {
-    search: params.get("q") ?? "",
-    category: params.get("category") ?? "",
-    sortBy: params.get("sortBy") ?? "title",
-    order: (params.get("order") as "asc" | "desc") ?? "asc",
-    page: Number(params.get("page")) || 1,
-  };
+  return parseStockUrlState(window.location.search);
 }
 
 function StockPageContent() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [urlState, setUrlState] = useState<UrlState>(readUrlState);
+  const [urlState, setUrlState] = useState<StockUrlState>(readUrlState);
   const [searchInput, setSearchInput] = useState(urlState.search);
   const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
@@ -57,8 +43,8 @@ function StockPageContent() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  function updateUrl(next: Partial<UrlState>) {
-    const merged: UrlState = { ...urlState, ...next };
+  function updateUrl(next: Partial<StockUrlState>) {
+    const merged: StockUrlState = { ...urlState, ...next };
     const params = new URLSearchParams();
     if (merged.search) params.set("q", merged.search);
     if (merged.category) params.set("category", merged.category);
