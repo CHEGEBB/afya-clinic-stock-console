@@ -47,7 +47,7 @@ npm run format:check — runs Prettier in check mode, fails on unformatted files
 ---
 ```
 
-## Section 1 — Design
+## Section 1 - Design
 
 ### Components and screens
 
@@ -57,7 +57,7 @@ For the login page, the authentication process will involve a username and passw
 
 The third screen, item detail screen, will appear when a user clicks on an item or follows a link which will be shared in chat by their colleague. It will display details about the item along with its quantity in stock. Item detail will resemble a card and will have action buttons such as Save and Edit. The Edit button will allow the correction of those items which don’t have the same quantity as the one in stock. Once Edit button is clicked, form component is invoked and quantity is updated and then save button is clicked to save the change.
 
-### State — server data, URL state, local UI state
+### State - server data, URL state, local UI state
 
 It is best to save the state on the url for filter, search, and sort functionalities. I first considered using local or session storage but using async storage would restrict my approach to link sharing with colleagues as once the link is shared, the other person would see what is saved on their own local storage instead of what I have sent since the local storage differs depending on the device. Saving the data in the url ensures that using query parameters search, filter, sort, and pagination are all consistent; what I see on the screen is what they will see, regardless of if there is an internet problem causing me to refresh the page. If I share the link with a colleague and he opens the link in his device, he would see the same screen as mine because the data is shared through the url.
 
@@ -111,7 +111,7 @@ Decision: After a successful stock saving operation, set the item's stock value 
 Alternative rejected: Refetch after saving.
 Reasons: PUT /products/{id} doesn’t update the product server-side in this mock API implementation, and a subsequent fetch would reset the stock value to what it was before, making the operation appear as though it failed when it didn’t.
 
-## Section 2 — Build
+## Section 2 - Build
 
 ### Required behaviour notes
 
@@ -145,7 +145,7 @@ In the course of setting up CI pipeline I encountered a problem because format:c
 
 I spent quite a lot of time on this. I had to google, used Claude and Gemini to better understand the errors I was encountering, and finally everything clicked and I was happy, as I was used to just using the inbuilt code quality tools that come pre-installed when using create-next-app.
 
-## Section 3 — Deployment & CI/CD
+## Section 3 - Deployment & CI/CD
 
 Public URL: https://afya-clinic-stock-console.vercel.app/
 
@@ -153,7 +153,7 @@ Deployment Branch: main
 
 Pipeline: GitHub Actions is triggered for every pull request into the main branch and every push to the main branch. The actions include Prettier format:check, ESLint, commitlint check for the commit messages, and Jest test suite run as one job where failure in any of these results in the job failure. Branch protection on the main branch will not allow the merge of pull requests until the job passes. Deployment is automatic from the main branch to Vercel via the Vercel CLI.
 
-## Section 4 — AI reflection
+## Section 4 - AI reflection
 
 **1. What I used AI for, per section**
 
