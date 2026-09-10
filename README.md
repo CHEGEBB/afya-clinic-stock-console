@@ -1,5 +1,6 @@
 # Afya Clinic Stock Console
-Afya Clinic Stock Console is an  internal stock console for a clinic’s supplies department. The console allows  searching, filtering, sorting, viewing the details of an item, and correcting the stock count. 
+
+Afya Clinic Stock Console is an internal stock console for a clinic’s supplies department. The console allows searching, filtering, sorting, viewing the details of an item, and correcting the stock count.
 
 ## Live Demo
 
@@ -21,12 +22,14 @@ https://github.com/CHEGEBB/afya-clinic-stock-console
 - Data source: DummyJSON
 
 ## Getting Started (Run Locally)
+
 ### Clone the repo, install dependencies, and run the dev server:
 
 ```
 git clone https://github.com/CHEGEBB/afya-clinic-stock-console.git
 cd afya-clinic-stock-console
 ```
+
 ### Running the app
 
 ```
@@ -84,18 +87,35 @@ In summary, I believe that with the above implemented, Afya Clinic Stock Console
 
 ### Decision log
 
-Decision: Use URL as storage for searching, filtering, sorting, and pagination. Alternative rejected: Local or session storage. Reasons: The storage is per device; therefore, a link sent to a colleague will have the state of that colleague rather than the state I am viewing, the URL comes with the link, which makes it ideal for sharing, reloading, and reconnection after dropping.
+Decision: Storage will be done via the url for searching, filtering, sorting, and pagination.
+Alternative rejected: Local or session storage.
+Reasons: The storage is per device. That means a link shared with a colleague will include the colleague’s state rather than mine, and the URL travels along with the link making it perfect for sharing, reloading, and reconnecting after losing connection.
 
-Decision: Debounce search requests using the useEffect hook rather than creating a request on each keystroke. Alternative rejected: Sending a request on each keystroke. Reasons: On a slow or intermittent network, e.g., ward tablets, the user will send requests that will spam the API and give old results since the slow request can resolve later than a faster one.
+Decision: De-bounce the search requests using the useEffect hook instead of sending a request for each key stroke.
+Alternative rejected: Send a request for each keystroke.
+Reasons: When the user is using a slow or unstable network like in ward tablets, he/she will end up sending requests to the API repeatedly and getting old data since the slow request may resolve before the fast one does.
 
-Decision: Refresh the access token in the background silently and try the failed request again rather than logging out the user if the token expires during the session. Alternative rejected: Redirecting the user to the login page if any 401 error occurs. Reasons: Losing user's place and having to log in again is not a good UX experience, especially for supplies staff in the middle of doing a stock count.
+Decision: Refresh access token silently in the background and retry the failed API call rather than logging out the user in case of expiration of the token in the middle of the session.
+Alternative rejected: Redirect user to the login page in case of any 401 error.
+Reasons: It's por user experience for users to lose their position and log in again, especially for supplies staff who is currently in the process of counting the stock.
 
----
+Decision: Parse url state via window.location.search and manually parsing the UrlSearchParams instead of Next.js's useSearchParams hook.
+Alternative rejected: useSearchParams hook wrapped inside the Suspense boundary.
+Reasons: In case the Suspense boundary is not configured correctly, I had faced a number of problems in building/deploying the useSearchParams hook in the past with Vercel.
+
+Decision: If both search and category filters are on at the same time, then the search overrides the category filter.
+Alternative rejected: Attempting to implement both the features server-side together.
+Reasons: The /products/search endpoint of DummyJSON doesn't have a parameter for categories, so filtering through a category can't be done within a search request, and fetching all data first and filtering it client-side isn't worth it for such a short assignment.
+
+Decision: After a successful stock saving operation, set the item's stock value directly from the response data of the API.
+Alternative rejected: Refetch after saving.
+Reasons: PUT /products/{id} doesn’t update the product server-side in this mock API implementation, and a subsequent fetch would reset the stock value to what it was before, making the operation appear as though it failed when it didn’t.
 
 ## Section 2 — Build
 
 ### Required behaviour notes
-When signing in, we request a token that expires in 1 minute, that is expiresInMins:1 as required. When the access token expires in the middle of the session, instead of logging out the user and redirecting them to the login page which would be poor user experience, my implementation  captures the 401 error and requests for a new access token with the help of the refresh token and retries the initial request on behalf of the user such that they do not get logged out or experience a blank page unless the refresh process fails.
+
+When signing in, we request a token that expires in 1 minute, that is expiresInMins:1 as required. When the access token expires in the middle of the session, instead of logging out the user and redirecting them to the login page which would be poor user experience, my implementation captures the 401 error and requests for a new access token with the help of the refresh token and retries the initial request on behalf of the user such that they do not get logged out or experience a blank page unless the refresh process fails.
 
 On the stock list page I've used the pagination function which loads 12 items on each page, this page also contains filter by category, sort by and also search box that provides debounce search of 400ms delay. This has been done through url parameters which ensure that even if I reload the page or copy the link and share it to other colleague they would get the same view as mine.
 
@@ -104,6 +124,7 @@ The item detail page was implemented by use of dynamic route /items/[id] that ge
 As far as stock correction is concerned, I have used zod, which is basically a library for doing form validation. The reason why there is no re-fetch of data in case of saving because the mocked API doesn’t persist the changes on the server-side as I have mentioned in the limitation section below.
 
 I verified the error path manually by temporarily routing a request to /http/500 and ensuring that the error and Retry button are rendering successfully and then reverting the changes before pushing them. I also tested the search input on the throttled "Slow 3G" network in dev tools of my chrome browser.
+
 ### Known limitations of the mock API
 
 PUT /products/{id} results in a merged object being returned in the response, but this is not saved on the server side. The application updates the state based on the returned object rather than making another call to avoid silent reverting of the UI to the previous value.
@@ -152,7 +173,7 @@ Claude was my pair programmer for conversation, not a framework driven by any sp
 
 **3. Where an AI suggestion improved my work**
 
-My previous experience with CI/CD involved Docker based GitHub Actions setup created when i was on attachment at Teach2Give. I sought help from Claude about how the same would be done in case the deployment process is not Docker based but Vercel based. It explained to me how to create the Vercel token and use Vercel CLI directly in the workflow, which proved much easier for me as compared to the Docker approach I already knew. This workflow also had a couple more steps than the one i had created so referencing the old one from one of my repos proved useless thus AI really improved my work. 
+My previous experience with CI/CD involved Docker based GitHub Actions setup created when i was on attachment at Teach2Give. I sought help from Claude about how the same would be done in case the deployment process is not Docker based but Vercel based. It explained to me how to create the Vercel token and use Vercel CLI directly in the workflow, which proved much easier for me as compared to the Docker approach I already knew. This workflow also had a couple more steps than the one i had created so referencing the old one from one of my repos proved useless thus AI really improved my work.
 
 **4. Where AI output was wrong**
 
