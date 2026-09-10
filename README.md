@@ -1,10 +1,11 @@
 # Afya Clinic Stock Console
-
-An internal stock console for a clinic's supplies team — search, filter, sort, view item detail, and correct stock counts. Built for the Savannah Informatics Web Engineer take-home assessment.
+Afya Clinic Stock Console is an  internal stock console for a clinic’s supplies department. The console allows  searching, filtering, sorting, viewing the details of an item, and correcting the stock count. 
 
 ## Live Demo
 
-TBD — link added after Section 3 deployment.
+https://afya-clinic-stock-console.vercel.app/
+
+Test login: username `emilys`, password `emilyspass` or any user from https://dummyjson.com/users
 
 ## Repository
 
@@ -20,13 +21,15 @@ https://github.com/CHEGEBB/afya-clinic-stock-console
 - Data source: DummyJSON
 
 ## Getting Started (Run Locally)
+### Clone the repo, install dependencies, and run the dev server:
 
 ```
-
-Clone the repo, install dependencies, and run the dev server:
-
 git clone https://github.com/CHEGEBB/afya-clinic-stock-console.git
 cd afya-clinic-stock-console
+```
+### Running the app
+
+```
 npm install
 npm run dev
 
@@ -92,35 +95,77 @@ Decision: Refresh the access token in the background silently and try the failed
 ## Section 2 — Build
 
 ### Required behaviour notes
+When signing in, we request a token that expires in 1 minute, that is expiresInMins:1 as required. When the access token expires in the middle of the session, instead of logging out the user and redirecting them to the login page which would be poor user experience, my implementation  captures the 401 error and requests for a new access token with the help of the refresh token and retries the initial request on behalf of the user such that they do not get logged out or experience a blank page unless the refresh process fails.
 
+On the stock list page I've used the pagination function which loads 12 items on each page, this page also contains filter by category, sort by and also search box that provides debounce search of 400ms delay. This has been done through url parameters which ensure that even if I reload the page or copy the link and share it to other colleague they would get the same view as mine.
+
+The item detail page was implemented by use of dynamic route /items/[id] that gets the product upon click in the stock list, and even when the link is pasted in the workspace chat, the view opens perfectly even on another device or when the page is reloaded.
+
+As far as stock correction is concerned, I have used zod, which is basically a library for doing form validation. The reason why there is no re-fetch of data in case of saving because the mocked API doesn’t persist the changes on the server-side as I have mentioned in the limitation section below.
+
+I verified the error path manually by temporarily routing a request to /http/500 and ensuring that the error and Retry button are rendering successfully and then reverting the changes before pushing them. I also tested the search input on the throttled "Slow 3G" network in dev tools of my chrome browser.
 ### Known limitations of the mock API
 
-TBD, for example PUT to /products/:id does not persist server side, and token expiry behaviour.
+PUT /products/{id} results in a merged object being returned in the response, but this is not saved on the server side. The application updates the state based on the returned object rather than making another call to avoid silent reverting of the UI to the previous value.
 
----
+/products/search and /products/category/{slug} are two distinct endpoints; there is no way to use both search and category filter at once in the same call. Search takes precedence over category filter if both of them are used, as shown in the decision log below.
 
 ## Code quality & tooling
 
-Formatter: Prettier, configured via .prettierrc. The format:check script runs prettier --check . and fails, non-zero exit, on unformatted files.
+For formatting, I used Prettier which is configured by the .prettierrc file. I have a format:check script which executes prettier --check . and exits with non-zero exit code when there is any issue with the formatting - this is run in CI to make sure we don't merge the formatting issues.
 
-Linter: ESLint, based on eslint-config-next, customized rather than left as default. @typescript-eslint/no-unused-vars is set to error to catch dead code and unused imports. react/no-unescaped-entities is disabled, since the app's copy, item names and labels, uses plain English apostrophes and quotes frequently, and escaping every instance hurt readability for no real benefit. This is documented inline in eslint.config.mjs.
+For linting, I used ESLint with configuration next, but I customized it rather than keeping it default. The @typescript-eslint/no-unused-vars was set to error to find unused variables and unused imports. I turned off react/no-unescaped-entities because the copy in the app - item names, labels etc. uses English apostrophe and quotation marks often, and escaping all of them was not adding much value but making it difficult to read.
 
-Conventional Commits: enforced via commitlint, using @commitlint/config-conventional, wired to a husky commit-msg hook, so it runs locally on every commit, not only in CI. Verified by testing both a rejected non conventional commit message and an accepted one.
+For enforcement of Conventional Commits, I used commitlint configured with @commitlint/config-conventional via husky commit-msg hook that gets executed every time I commit locally rather than only in the CI pipeline. This was tested for its proper functionality with messages that were either invalid, which was rejected or valid which was accepted.
 
-.editorconfig: committed at the repo root, UTF-8, LF line endings, 2 space indent, consistent across editors.
+To ensure the consistent formatting, I set up the editorconfig file in the root of the repository with the following parameters: UTF-8 encoding, LF line ending and 2-space indentation.
 
----
+In the course of setting up CI pipeline I encountered a problem because format:check passed locally, on my Windows machine, but failed in the CI, on GitHub Actions. It turned out to be the problem with the line endings since the default in Windows is CRLF and CI is run on Linux with LF line endings due to the endOfLine: "lf" parameter in my .prettierrc file. It was resolved by running npm run format command locally to make sure all files have LF line endings and committing them. Besides, I updated the Node version used in the CI workflow from 20 to 22 due to its deprecation in the GitHub actions that I use.
+
+I spent quite a lot of time on this. I had to google, used Claude and Gemini to better understand the errors I was encountering, and finally everything clicked and I was happy, as I was used to just using the inbuilt code quality tools that come pre-installed when using create-next-app.
 
 ## Section 3 — Deployment & CI/CD
 
-Public URL: TBD
+Public URL: https://afya-clinic-stock-console.vercel.app/
 
-Deploy branch: TBD
+Deployment Branch: main
 
-Pipeline: TBD, what it runs and which checks can block a merge.
-
----
+Pipeline: GitHub Actions is triggered for every pull request into the main branch and every push to the main branch. The actions include Prettier format:check, ESLint, commitlint check for the commit messages, and Jest test suite run as one job where failure in any of these results in the job failure. Branch protection on the main branch will not allow the merge of pull requests until the job passes. Deployment is automatic from the main branch to Vercel via the Vercel CLI.
 
 ## Section 4 — AI reflection
 
-TBD, answered honestly, per section, once the build is complete
+**1. What I used AI for, per section**
+
+Scaffolding & tooling- initial project configuration, Prettier/ESLint/commitlint/husky configuration, debugging actual problems when they arose.
+
+Section 1:Design- I did the write-up of the design and decision log by myself at first. As I have prior experience working with Next.js App Router, I already had a visual representation of how the structure and data flow will work, making it easy for me to think through it myself. AI helped with phrasing and pointed out one gap in my thinking , I didn't mention where auth state was stored even though I already decided to use zustand for that.
+
+Section 2:Build- My first thought for handling url and filter state was to use localStorage. The idea occurred to me before I used claude at all. During our discussions claude showed me that it couldn't be done that way since localStorage is per-device and any shared url between colleagues would show their state, not mine. It influenced my approach to url state which is described in README's decision log.
+
+Section 3:CI/CD- Although I have prior experience with CI/CD pipelines for Github Actions during my Teach2Give attachment, they were based on the use of Docker containerization, which is completely different from deployment via vercel. I queried Claude on how this method was done without using Docker, and he explained that I needed to set up a Vercel token, added to github secrets and variables and re-ran the actions which had previously failed as it couldn't find the token.
+
+Section 4:AI reflection- Written by me .
+
+**2. Tools and workflow**
+
+Claude was my pair programmer for conversation, not a framework driven by any specification. I had worked with Jest previously when doing my attachment at Teach2Give, and when AI suggested Vitest, it was a new thing to me, which I wanted to refute and continue working with Jest through AI rather than take everything AI says. Since I was out of touch with the Jest set-up details, AI came handy in helping me write validation tests and integrate the test script with package.json. My workflow involved one file at a time, build, test, commit and then continue.
+
+**3. Where an AI suggestion improved my work**
+
+My previous experience with CI/CD involved Docker based GitHub Actions setup created when i was on attachment at Teach2Give. I sought help from Claude about how the same would be done in case the deployment process is not Docker based but Vercel based. It explained to me how to create the Vercel token and use Vercel CLI directly in the workflow, which proved much easier for me as compared to the Docker approach I already knew. This workflow also had a couple more steps than the one i had created so referencing the old one from one of my repos proved useless thus AI really improved my work. 
+
+**4. Where AI output was wrong**
+
+My initial Zod schema for the stock data was correct, however, the test I wrote for the same was failing because of an assumption that an empty string would result in NaN whereas it results in 0 in JavaScript because of Number(""). Thus, an empty input would validate as a non-stock. I changed the schema to make sure that it includes a .finite() check and corrected the test as well.
+
+At first, AI recommended useSearchParams inside a suspense boundary to get the state from the url. As I had some experience deploying with Vercel in the past, I knew about the danger of using useSearchParams without setting up the suspense boundary perfectly. Therefore, I suggested another method to implement the same logic without using this pattern.
+
+**5. Two decisions I made without AI**
+
+Refusing to use useSearchParams for state management of urls. Having had experience using it in the past, and having caused Vercel deployment issues due to incorrect implementation of the Suspense boundary, I refused to do so myself, before even proposing an alternative solution that did the same thing.
+
+Using the colors of emerald green and warm white for my chosen color scheme, not a default one, or AI suggestion. I was looking for an approach that would evoke feelings of calmness and security, and this would suit well a tool for a clinic which people use every day, so I chose and defined these colors myself as design tokens.
+
+**6. What I'd struggle to defend**
+
+Token Refresh logic in api-client.ts. We are using the authentication endpoints provided by DummyJSON in this example, but in previous examples, I have written the authentication logic for CORS, refresh token, and access token myself and have faced problems there too. This is something that I am aware of but would like to learn further about. The debounce logic used in the stocks list is another example of such logic.
