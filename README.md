@@ -87,31 +87,29 @@ In summary, I believe that with the above implemented, Afya Clinic Stock Console
 
 ### Decision log
 
-### Decision log
+Decision: Storage will be done via the url for searching, filtering, sorting, and pagination.
+Alternative rejected: Local or session storage.
+Reasons: The storage is per device. That means a link shared with a colleague will include the colleague’s state rather than mine, and the URL travels along with the link making it perfect for sharing, reloading, and reconnecting after losing connection.
 
-**Decision:** Storage will be done via the url for searching, filtering, sorting, and pagination.
-**Alternative rejected:** Local or session storage.
-**Reasons:** The storage is per device. That means a link shared with a colleague will include the colleague's state rather than mine, and the URL travels along with the link making it perfect for sharing, reloading, and reconnecting after losing connection.
+Decision: De-bounce the search requests using the useEffect hook instead of sending a request for each key stroke.
+Alternative rejected: Send a request for each keystroke.
+Reasons: When the user is using a slow or unstable network like in ward tablets, he/she will end up sending requests to the API repeatedly and getting old data since the slow request may resolve before the fast one does.
 
-**Decision:** De-bounce the search requests using the useEffect hook instead of sending a request for each key stroke.
-**Alternative rejected:** Send a request for each keystroke.
-**Reasons:** When the user is using a slow or unstable network like in ward tablets, he/she will end up sending requests to the API repeatedly and getting old data since the slow request may resolve before the fast one does.
+Decision: Refresh access token silently in the background and retry the failed API call rather than logging out the user in case of expiration of the token in the middle of the session.
+Alternative rejected: Redirect user to the login page in case of any 401 error.
+Reasons: It's por user experience for users to lose their position and log in again, especially for supplies staff who is currently in the process of counting the stock.
 
-**Decision:** Refresh access token silently in the background and retry the failed API call rather than logging out the user in case of expiration of the token in the middle of the session.
-**Alternative rejected:** Redirect user to the login page in case of any 401 error.
-**Reasons:** It's poor user experience for users to lose their position and log in again, especially for supplies staff who is currently in the process of counting the stock.
+Decision: Parse url state via window.location.search and manually parsing the UrlSearchParams instead of Next.js's useSearchParams hook.
+Alternative rejected: useSearchParams hook wrapped inside the Suspense boundary.
+Reasons: In case the Suspense boundary is not configured correctly, I had faced a number of problems in building/deploying the useSearchParams hook in the past with Vercel.
 
-**Decision:** Parse url state via window.location.search and manually parsing the UrlSearchParams instead of Next.js's useSearchParams hook.
-**Alternative rejected:** useSearchParams hook wrapped inside the Suspense boundary.
-**Reasons:** In case the Suspense boundary is not configured correctly, I had faced a number of problems in building/deploying the useSearchParams hook in the past with Vercel.
+Decision: If both search and category filters are on at the same time, then the search overrides the category filter.
+Alternative rejected: Attempting to implement both the features server-side together.
+Reasons: The /products/search endpoint of DummyJSON doesn't have a parameter for categories, so filtering through a category can't be done within a search request, and fetching all data first and filtering it client-side isn't worth it for such a short assignment.
 
-**Decision:** If both search and category filters are on at the same time, then the search overrides the category filter.
-**Alternative rejected:** Attempting to implement both the features server-side together.
-**Reasons:** The /products/search endpoint of DummyJSON doesn't have a parameter for categories, so filtering through a category can't be done within a search request, and fetching all data first and filtering it client-side isn't worth it for such a short assignment.
-
-**Decision:** After a successful stock saving operation, set the item's stock value directly from the response data of the API.
-**Alternative rejected:** Refetch after saving.
-**Reasons:** PUT /products/{id} doesn't update the product server-side in this mock API implementation, and a subsequent fetch would reset the stock value to what it was before, making the operation appear as though it failed when it didn't.
+Decision: After a successful stock saving operation, set the item's stock value directly from the response data of the API.
+Alternative rejected: Refetch after saving.
+Reasons: PUT /products/{id} doesn’t update the product server-side in this mock API implementation, and a subsequent fetch would reset the stock value to what it was before, making the operation appear as though it failed when it didn’t.
 
 ## Section 2 - Build
 
